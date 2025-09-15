@@ -430,7 +430,9 @@ function DialogActionButtons(props: BasseGeneralModalProps) {
   const values = useWatch();
 
   function submitHandler(values) {
-    onSave(values);
+    // Exclude metadata fields that shouldn't be saved as preferences
+    const { label, source, version, ...preferences } = values;
+    onSave(preferences);
     onCloseDialog?.();
   }
 

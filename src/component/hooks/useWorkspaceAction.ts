@@ -8,6 +8,7 @@ import {
   updateSettings,
 } from '../reducer/preferences/preferencesReducer.js';
 import { workspaceDefaultProperties } from '../workspaces/workspaceDefaultProperties.js';
+import { preferencesAPI } from '../api/preferenceAPIService.ts';
 
 export function useWorkspaceAction() {
   const { dispatch, current, workspace } = usePreferences();
@@ -20,6 +21,32 @@ export function useWorkspaceAction() {
     };
     settings.currentWorkspace = workspace;
     updateSettings(settings);
+
+    // Use workspace API to set default on server (only for user workspaces)
+    const workspaceData = settings?.workspaces?.[workspace];
+    if (workspaceData?.source === 'user' && workspace !== 'default') {
+      preferencesAPI.setDefaultWorkspace(workspace).catch(error => {
+        console.error('Failed to set default workspace on server:', error);
+      });
+    }
+
+    // Load workspace-specific preferences from server
+    const workspaceId = workspace === 'default' ? undefined : workspace;
+    preferencesAPI.getWorkspacePreferences(workspaceId).then(preferences => {
+      if (preferences && Object.keys(preferences).length > 0) {
+        // Merge server preferences with local workspace
+        const updatedSettings = readSettings();
+        if (updatedSettings?.workspaces[workspace]) {
+          updatedSettings.workspaces[workspace] = {
+            ...updatedSettings.workspaces[workspace],
+            ...preferences,
+          };
+          updateSettings(updatedSettings);
+        }
+      }
+    }).catch(error => {
+      console.warn('Failed to load workspace preferences from server:', error);
+    });
 
     dispatch({
       type: 'SET_ACTIVE_WORKSPACE',
@@ -45,24 +72,59 @@ export function useWorkspaceAction() {
       },
     );
     const workspaceKey = crypto.randomUUID();
-    const localData = readSettings() || { workspaces: {} };
-    const settings = {
-      ...localData,
-      currentWorkspace: workspaceKey,
-      workspaces: { ...localData?.workspaces, [workspaceKey]: newWorkSpace },
-    };
-    updateSettings(settings as Settings);
 
-    dispatch({
-      type: 'ADD_WORKSPACE',
-      payload: {
-        workspaceKey,
-        data: newWorkSpace,
-      },
+    // Create workspace on server first, fall back to local if it fails
+    preferencesAPI.createWorkspace({
+      name: workspaceKey,
+      label: workspaceName,
+      source: 'user',
+      is_default: false,
+      configuration: newWorkSpace,
+    }).then(serverWorkspace => {
+      // Use server workspace ID if successful
+      const actualWorkspaceKey = serverWorkspace.id || workspaceKey;
+      const localData = readSettings() || { workspaces: {} };
+      const settings = {
+        ...localData,
+        currentWorkspace: actualWorkspaceKey,
+        workspaces: { ...localData?.workspaces, [actualWorkspaceKey]: newWorkSpace },
+      };
+      updateSettings(settings as Settings);
+
+      dispatch({
+        type: 'ADD_WORKSPACE',
+        payload: {
+          workspaceKey: actualWorkspaceKey,
+          data: newWorkSpace,
+        },
+      });
+    }).catch(error => {
+      console.error('Failed to create workspace on server, using local only:', error);
+      // Fallback to local creation
+      const localData = readSettings() || { workspaces: {} };
+      const settings = {
+        ...localData,
+        currentWorkspace: workspaceKey,
+        workspaces: { ...localData?.workspaces, [workspaceKey]: newWorkSpace },
+      };
+      updateSettings(settings as Settings);
+
+      dispatch({
+        type: 'ADD_WORKSPACE',
+        payload: {
+          workspaceKey,
+          data: newWorkSpace,
+        },
+      });
     });
   }
 
   function removeWorkspace(key: string) {
+    // Delete on server first
+    preferencesAPI.deleteWorkspace?.(key).catch(error => {
+      console.error('Failed to delete workspace on server:', error);
+    });
+
     const settings = readSettings();
     if (settings) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -87,17 +149,51 @@ export function useWorkspaceAction() {
       currentWorkspace: null,
       workspaces: {},
     };
+    
+    // Get existing workspace to preserve metadata (label, source, etc.)
+    const existingWorkspace = settings.workspaces[workspace.current];
+    const updatedWorkspace = data ? { ...existingWorkspace, ...data } : current;
+    
+    // Update workspace configuration on server
+    preferencesAPI.updateWorkspace(workspace.current, {
+      configuration: updatedWorkspace
+    }).catch(error => {
+      console.error('Failed to update workspace on server:', error);
+    });
+    
+    // Update workspace preferences as sections (if data provided)
+    if (data) {
+      const workspaceId = workspace.current === 'default' ? undefined : workspace.current;
+      
+      // Update preference sections for this workspace
+      const sectionUpdates = [
+        { section: 'panels', preferences: data.panels },
+        { section: 'display', preferences: data.display },
+        { section: 'general', preferences: data.general },
+        { section: 'export', preferences: data.export },
+        { section: 'print', preferences: data.printPageOptions },
+      ];
+      
+      sectionUpdates.forEach(({ section, preferences }) => {
+        if (preferences && Object.keys(preferences).length > 0) {
+          preferencesAPI.updatePreferenceSection(section, preferences, workspaceId).catch(error => {
+            console.error(`Failed to update ${section} section for workspace:`, error);
+          });
+        }
+      });
+    }
+    
     updateSettings({
       ...settings,
       workspaces: {
         ...settings.workspaces,
-        [workspace.current]: data ?? current,
+        [workspace.current]: updatedWorkspace,
       },
     } as Settings);
 
     dispatch({
-      type: 'SET_PREFERENCES',
-      ...(data && { payload: data }),
+      type: 'APPLY_General_PREFERENCES',
+      payload: { data: updatedWorkspace },
     });
   }
 

@@ -17,4 +17,7 @@ export function removeWorkspace(
 
   // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete draft.workspaces[workspace];
+
+  // Server sync is now handled in useWorkspaceAction via workspace API
+  // No API call needed here
 }

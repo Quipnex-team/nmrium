@@ -25,6 +25,11 @@ import preferencesReducer, {
   preferencesInitialState,
   readSettings,
 } from '../reducer/preferences/preferencesReducer.js';
+import {
+  setAPIConfig,
+  useLocalStorageMigration,
+  useStateWithServerStorage,
+} from '../utility/LocalStorage.js';
 
 import { InnerNMRiumContents } from './InnerNMRiumContents.js';
 import type { NMRiumProps } from './NMRium.js';
@@ -46,6 +51,7 @@ export function InnerNMRium(props: InnerNMRiumProps) {
     emptyText,
     apiRef,
     core,
+    apiConfig,
   } = props;
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -60,11 +66,72 @@ export function InnerNMRium(props: InnerNMRiumProps) {
     return core;
   }, [core]);
 
+  // Configure API for server sync
+  useEffect(() => {
+    if (apiConfig) {
+      setAPIConfig({
+        baseURL: apiConfig.baseURL,
+        token: apiConfig.token,
+        headers: apiConfig.headers,
+      });
+      
+      // Enable server sync
+      if (apiConfig.enableSync) {
+        localStorage.setItem('nmrium_server_sync', 'true');
+        // Set global config for window access
+        (window as any).NMRIUM_CONFIG = {
+          enableServerSync: true,
+          syncInterval: apiConfig.syncInterval,
+        };
+      }
+    }
+  }, [apiConfig]);
+
+  // // Use server storage hook if API is configured
+  // const { migrateToServer, isMigrationComplete } = useLocalStorageMigration();
+
+  // // Trigger migration if server sync is enabled and not yet migrated
+  // useEffect(() => {
+  //   if (apiConfig?.enableSync && !isMigrationComplete()) {
+  //     migrateToServer().catch(error => {
+  //       console.error('Failed to migrate to server:', error);
+  //     });
+  //   }
+  // }, [apiConfig?.enableSync, isMigrationComplete, migrateToServer]);
+
   const [preferencesState, dispatchPreferences] = useReducer(
     preferencesReducer,
     preferencesInitialState,
     initPreferencesState,
   );
+
+  // Use server storage for preferences if enabled
+  const [serverPrefs, setServerPrefs, { loading: serverLoading }] = useStateWithServerStorage(
+    'nmr-general-settings',
+    undefined,
+    {
+      useServer: apiConfig?.enableSync ?? false,
+      syncInterval: apiConfig?.syncInterval ?? 30000,
+      offlineSupport: true,
+    }
+  );
+
+  // Sync server preferences to local state
+  useEffect(() => {
+    if (apiConfig?.enableSync && serverPrefs && !serverLoading) {
+      dispatchPreferences({
+        type: 'INIT_PREFERENCES',
+        payload: {
+          preferences: serverPrefs.preferences,
+          workspace: serverPrefs.workspace?.current || serverPrefs.currentWorkspace,
+          customWorkspaces: serverPrefs.workspaces || customWorkspaces,
+          currentWorkspace: serverPrefs.currentWorkspace,
+          serverPreferences: serverPrefs, // Pass the complete server data
+          dispatch: dispatchPreferences,
+        },
+      });
+    }
+  }, [apiConfig?.enableSync, serverPrefs, serverLoading, customWorkspaces]);
 
   useEffect(() => {
     rootRef.current?.focus();

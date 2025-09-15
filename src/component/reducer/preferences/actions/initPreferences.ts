@@ -21,16 +21,26 @@ export function initPreferences(draft: Draft<PreferencesState>, action) {
       customWorkspaces: cw,
       preferences,
       currentWorkspace,
+      serverPreferences,
     } = action.payload;
-    const customWorkspaces = mapWorkspaces(cw, { source: 'custom' });
+    const customWorkspaces = mapWorkspaces(cw || {}, { source: 'custom' });
 
+    // Merge server workspaces if provided
+    let serverWorkspaces = {};
+    if (serverPreferences?.workspaces) {
+      serverWorkspaces = mapWorkspaces(serverPreferences.workspaces, { source: 'user' });
+    }
+
+    // Priority order for workspace merging: server > custom > existing
     draft.workspaces = {
       ...draft.workspaces,
       ...customWorkspaces,
+      ...serverWorkspaces,
     };
     draft.originalWorkspaces = {
       ...draft.originalWorkspaces,
       ...customWorkspaces,
+      ...serverWorkspaces,
     };
 
     /**
@@ -39,6 +49,7 @@ export function initPreferences(draft: Draft<PreferencesState>, action) {
         2- preferences
         3- workspace -> if does not exists -> default workspace
         4- last selected workspace
+        5- server preferences (if available)
      */
 
     if (preferences) {
@@ -52,6 +63,11 @@ export function initPreferences(draft: Draft<PreferencesState>, action) {
         current: _workspace,
         base: _workspace,
       };
+    } else if (serverPreferences?.currentWorkspace || serverPreferences?.current_workspace) {
+      // Use server workspace if available (check both possible property names)
+      const serverWorkspace = serverPreferences.currentWorkspace || serverPreferences.current_workspace;
+      const _workspace = getWorkspace(draft, serverWorkspace);
+      draft.workspace = { current: _workspace, base: null };
     } else {
       const _workspace = getWorkspace(draft, currentWorkspace);
       draft.workspace = { current: _workspace, base: null };

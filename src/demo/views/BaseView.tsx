@@ -112,6 +112,12 @@ export default function BaseView(props: BaseViewProps) {
           <div style={{ width: isCallbackVisible ? '75%' : '100%' }}>
             <NMRium
               data={data}
+              apiConfig={{
+                baseURL: 'http://tenant1.localhost:8000/qxcore',
+                token: localStorage.getItem('jwt_token') || '',
+                enableSync: true,
+                syncInterval: 30000, // sync every 30 seconds
+              }}
               onChange={changeHandler}
               {...(workspace && { workspace })}
               {...(customWorkspaces && { customWorkspaces })}

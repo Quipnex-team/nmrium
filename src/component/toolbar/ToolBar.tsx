@@ -82,6 +82,7 @@ function useExportList() {
   const exportMenu = isExperimentalFeature
     ? EXPORT_MENU
     : EXPORT_MENU.filter((item) => item.id !== 'nmre');
+    console.log(exportMenu);
 
   if (spectrum) {
     exportMenu.push({

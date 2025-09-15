@@ -14,7 +14,7 @@ import type { Reducer } from 'react';
 import type { SplitPaneSize } from 'react-science/ui';
 
 import type { NMRiumPreferences, NMRiumWorkspace } from '../../main/index.js';
-import { getLocalStorage, storeData } from '../../utility/LocalStorage.js';
+import { getLocalStorage, preferencesAPI, storeData } from '../../utility/LocalStorage.js';
 import type { FilterType } from '../../utility/filterType.js';
 import Workspaces from '../../workspaces/index.js';
 import type { ActionType } from '../types/ActionType.js';
@@ -195,6 +195,8 @@ export interface PreferencesState {
     current: NMRiumWorkspace;
     base: NMRiumWorkspace | null;
   };
+  serverSyncEnabled?: boolean;
+  lastServerSync?: number;
 }
 
 export const preferencesInitialState: PreferencesState = {
@@ -238,7 +240,13 @@ export function initPreferencesState(
     source: 'user',
   });
 
-  return {
+  // Check if server sync is enabled (can be set via environment or user preference)
+  const serverSyncEnabled = 
+    localStorage.getItem('nmrium_server_sync') === 'true' ||
+    (typeof process !== 'undefined' && process.env?.REACT_APP_ENABLE_SERVER_SYNC === 'true') ||
+    (typeof window !== 'undefined' && (window as any).NMRIUM_CONFIG?.enableServerSync === true);
+
+  const initialState = {
     ...state,
     originalWorkspaces: { ...predefinedWorkspaces, ...localWorkspaces },
     workspaces: { ...predefinedWorkspaces, ...localWorkspaces },
@@ -246,7 +254,36 @@ export function initPreferencesState(
       current: settings?.currentWorkspace || 'default',
       base: null,
     },
+    serverSyncEnabled,
+    lastServerSync: 0,
   };
+
+  // Load preferences from server if sync is enabled
+/*   if (serverSyncEnabled && typeof window !== 'undefined') {
+    import('../../utility/LocalStorage.js').then(({ preferencesAPI }) => {
+      preferencesAPI.getUserPreferences()
+        .then(data => {
+          if (data?.preferences) {
+            // Server preferences will be merged via dispatch action
+            const serverWorkspaces = data.preferences.workspaces || {};
+            const serverCurrent = data.preferences.current_workspace;
+            
+            // Store in localStorage for offline access
+            const mergedSettings = {
+              ...settings,
+              workspaces: { ...settings.workspaces, ...serverWorkspaces },
+              currentWorkspace: serverCurrent || settings.currentWorkspace,
+            };
+            updateSettings(mergedSettings);
+          }
+        })
+        .catch(error => {
+          console.warn('Failed to load server preferences, using local:', error);
+        });
+    });
+  } */
+
+  return initialState;
 }
 
 function innerPreferencesReducer(

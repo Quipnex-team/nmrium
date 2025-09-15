@@ -217,7 +217,7 @@ function SaveButton() {
           backgroundColor: { base: 'gray', hover: 'lightgray' },
           disabled: true,
         })}
-        toolTip="Save workspace locally in the browser"
+        toolTip="Save workspace"
       >
         <FaRegSave />
       </Button.Done>

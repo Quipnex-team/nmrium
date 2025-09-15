@@ -73,7 +73,7 @@ export function useSaveSettings() {
   }
 
   function saveSettings(values?: Partial<Workspace>) {
-    settingsRef.current = values as Workspace;
+    settingsRef.current = (values ?? current) as Workspace;
     if (current.source !== 'user') {
       reset({ workspaceName: '' });
       openDialog();
