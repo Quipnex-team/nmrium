@@ -31,7 +31,7 @@ import { useScale2DX, useScale2DY } from '../utilities/scale.js';
 const Rect = styled.rect<{ isActive: boolean }>`
   fill: ${({ isActive }) => (isActive ? '#ff6f0057' : 'transparent')};
 
-  &:hover {
+  :hover {
     fill: #ff6f0057;
   }
 `;
@@ -71,19 +71,20 @@ function useSignalsOverlap(axis: IndicationLinesAxis, spectrum: Spectrum1D) {
 
   const isOverXAxis = axis === 'x';
 
-  const processedSignals: ProcessedSignal[] = signals
-    .map((signal) => {
-      const { delta } = signal;
-      const text = signal.assignment ?? '';
-      const { width: labelWidth } = context.measureText(text);
+  const processedSignals: ProcessedSignal[] = signals.map((signal) => {
+    const { delta } = signal;
+    const text = signal.assignment ?? '';
+    const { width: labelWidth } = context.measureText(text);
 
-      return {
-        ...signal,
-        labelWidth,
-        deltaInPixel: isOverXAxis ? scaleX(delta) : scaleY(delta),
-      };
-    })
-    .sort((a, b) => (isOverXAxis ? b.delta - a.delta : a.delta - b.delta));
+    return {
+      ...signal,
+      labelWidth,
+      deltaInPixel: isOverXAxis ? scaleX(delta) : scaleY(delta),
+    };
+  });
+  processedSignals.sort((a, b) =>
+    isOverXAxis ? b.delta - a.delta : a.delta - b.delta,
+  );
 
   return stackOverlappingLabelsArray(processedSignals, {
     startPositionKey: 'deltaInPixel',
@@ -241,7 +242,7 @@ function IndicationLine(props: IndicationLineProps) {
       onClick: () => unAssignHandler(),
       intent: 'danger',
       title: 'Unassign range',
-      visible: !!(isAssignmentActive || hasDiaIDs),
+      visible: isAssignmentActive || hasDiaIDs,
     },
     {
       icon: <PiTextTBold />,

@@ -214,7 +214,7 @@ const GroupContainer = styled.g<{ isMoveActive: boolean }>(
   visibility: hidden;
 }
 
-&:hover {
+:hover {
   .target {
     visibility: visible;
   }
@@ -255,9 +255,8 @@ function getAssignmentLabel(
 ) {
   if (!spectrum) return null;
   const { center, from, to } = options;
-  const signalList = extractSpectrumSignals(spectrum, { from, to }).sort(
-    (a, b) => a.delta - b.delta,
-  );
+  const signalList = extractSpectrumSignals(spectrum, { from, to });
+  signalList.sort((a, b) => a.delta - b.delta);
   return findClosestAssignment(signalList, center);
 }
 

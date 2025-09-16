@@ -16,6 +16,7 @@ import type { AlertButton } from '../../../elements/Alert.js';
 import { useAlert } from '../../../elements/Alert.js';
 import { EmptyText } from '../../../elements/EmptyText.js';
 import { Sections } from '../../../elements/Sections.js';
+import { useActiveSpectrum } from '../../../hooks/useActiveSpectrum.ts';
 import useSpectraByActiveNucleus from '../../../hooks/useSpectraPerNucleus.js';
 import useSpectrum from '../../../hooks/useSpectrum.js';
 import { getDefaultFilterOptions } from '../../../utility/getDefaultFilterOptions.js';
@@ -26,10 +27,19 @@ export const nonRemovableFilters = new Set<BaseFilterEntry['name']>([
   'digitalFilter',
   'digitalFilter2D',
 ]);
+const readOnlyFilters = new Set<BaseFilterEntry['name']>([
+  'digitalFilter',
+  'shiftX',
+  'exclusionZones',
+  'fft',
+  'digitalFilter2D',
+  'fftDimension1',
+  'fftDimension2',
+]);
 
 const IconButton = styled(Button)`
-  padding: 2px;
   font-size: 16px;
+  padding: 2px;
 `;
 
 const Filters = {
@@ -120,9 +130,14 @@ function FilterElements(props: FilterElementsProps) {
     });
   }
 
+  const isEditable =
+    !hideFilterRestoreButton &&
+    activeFilterID !== id &&
+    !readOnlyFilters.has(name);
+
   return (
     <>
-      {!hideFilterRestoreButton && activeFilterID !== id && (
+      {isEditable && (
         <IconButton
           intent="success"
           tooltipProps={{
@@ -176,6 +191,7 @@ function FiltersInner(props: FiltersInnerProps) {
   const dispatch = useDispatch();
   const toaster = useToaster();
   const selectedFilterIndex = useRef<number>();
+  const activeSpectrum = useActiveSpectrum();
 
   function toggleSection(sectionKey) {
     openSection(selectedSection === sectionKey ? '' : sectionKey);
@@ -242,16 +258,32 @@ function FiltersInner(props: FiltersInnerProps) {
         return null;
       });
     }
+  }, [filters, selectedTool]);
 
+  useEffect(() => {
     if (Filters?.[selectedTool]) {
       openSection(selectedTool);
+      return;
     }
-  }, [filters, selectedTool]);
+
+    const filter = filters.find((filter) => filter.id === activeFilterID);
+
+    if (filter) {
+      openSection(filter.name);
+    }
+  }, [activeFilterID, filters, selectedTool]);
 
   const filtersList = [...filters];
 
-  if (newFilter) {
-    filtersList.push(newFilter);
+  if (newFilter && activeSpectrum) {
+    const activeFilterIndex = filters.findIndex(
+      (filter) => filter.id === activeFilterID,
+    );
+    if (activeFilterIndex === -1) {
+      filtersList.push(newFilter);
+    } else {
+      filtersList.splice(activeFilterIndex + 1, 0, newFilter);
+    }
   }
 
   if (filtersList?.length === 0) {

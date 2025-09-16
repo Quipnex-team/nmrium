@@ -14,8 +14,8 @@ import type {
 } from '../../EventsTrackers/BrushTracker.js';
 import type { Tool } from '../../toolbar/ToolTypes.js';
 import { options as Tools } from '../../toolbar/ToolTypes.js';
-import groupByInfoKey from '../../utility/GroupByInfoKey.js';
 import { getSpectraByNucleus } from '../../utility/getSpectraByNucleus.js';
+import groupByInfoKey from '../../utility/groupByInfoKey.js';
 import type { State } from '../Reducer.js';
 import { MARGIN } from '../core/Constants.js';
 import type { ZoomType } from '../helper/Zoom1DManager.js';
@@ -148,10 +148,11 @@ function handleResetSelectedTool(draft: Draft<State>) {
   resetSelectedTool(draft);
 }
 function resetSelectedTool(draft: Draft<State>) {
-  if (
-    draft.toolOptions.selectedTool &&
-    Tools[draft.toolOptions.selectedTool].isFilter
-  ) {
+  const {
+    selectedTool,
+    data: { activeFilterID },
+  } = draft.toolOptions;
+  if ((selectedTool && Tools[selectedTool].isFilter) || activeFilterID) {
     resetTool(draft, { reset: true, toolId: draft.toolOptions.selectedTool });
   }
 }
@@ -581,9 +582,8 @@ function setTabActiveSpectrum(draft: Draft<State>, dataGroupByTab) {
   const tabs2D: any[] = [];
   const tabActiveSpectrum = {};
 
-  const tabkeys = Object.keys(dataGroupByTab).sort((a, b) =>
-    a.split(',').length > b.split(',').length ? -1 : 1,
-  );
+  const tabkeys = Object.keys(dataGroupByTab);
+  tabkeys.sort((a, b) => (a.split(',').length > b.split(',').length ? -1 : 1));
   for (const tabKey of tabkeys) {
     const data = dataGroupByTab[tabKey];
     const nucleusLength = tabKey.split(',').length;
@@ -627,7 +627,8 @@ function setTabActiveSpectrum(draft: Draft<State>, dataGroupByTab) {
 
 //utility
 function setTab(draft: Draft<State>, dataGroupByTab, tab, refresh = false) {
-  const groupByTab = Object.keys(dataGroupByTab).sort((a, b) =>
+  const groupByTab = Object.keys(dataGroupByTab);
+  groupByTab.sort((a, b) =>
     a.split(',').length > b.split(',').length ? -1 : 1,
   );
 

@@ -39,16 +39,16 @@ test('Check if the color picker is visible after click on the ColorIndicator', a
 test('Should Zoom', async ({ page }) => {
   const nmrium = await NmriumPage.create(page);
   await nmrium.open1D();
+  const pathLocator = nmrium.page.getByTestId('spectrum-line');
 
-  const previousPath = (await nmrium.page
-    .getByTestId('spectrum-line')
-    .getAttribute('d')) as string;
+  const previousPath = (await pathLocator.getAttribute('d')) as string;
 
   await nmrium.viewer.drawRectangle({ axis: 'x', startX: 100, endX: 200 });
 
-  const path = (await nmrium.page
-    .getByTestId('spectrum-line')
-    .getAttribute('d')) as string;
+  // wait for path to change
+  await expect(pathLocator).not.toHaveAttribute('d', previousPath);
+
+  const path = (await pathLocator.getAttribute('d')) as string;
 
   expect(path.length).toBeGreaterThan(1000);
   expect(path).not.toContain('NaN');
@@ -370,7 +370,7 @@ test('Export source from 1H spectrum', async ({ page }) => {
   });
   await test.step('Open Save as window ', async () => {
     await nmrium.clickTool('exportAs');
-    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save data as');
+    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save as');
   });
   await test.step('Check include data options', async () => {
     const fields = nmrium.page.locator(
@@ -408,7 +408,7 @@ test('Export source from 1H spectrum', async ({ page }) => {
   await test.step('Check export DATA SOURCE', async () => {
     const downloadPromise = nmrium.page.waitForEvent('download');
     await nmrium.clickTool('exportAs');
-    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save data as');
+    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save as');
 
     await nmrium.page.click('_react=SaveAsModal >> text="Data source" ');
 
@@ -432,7 +432,7 @@ test('Export source from 1H spectrum', async ({ page }) => {
   await test.step('Check export NO Data', async () => {
     const downloadPromise = nmrium.page.waitForEvent('download');
     await nmrium.clickTool('exportAs');
-    await nmrium.page.click('_react=ToolbarPopoverItem >> text=Save data as');
+    await nmrium.page.click('_react=ToolbarPopoverItem >> text=Save as');
     await nmrium.page.click('_react=SaveAsModal >> text="No data" ');
     await nmrium.page.click('_react=SaveAsModal >> button >> text=Save');
     const download = await downloadPromise;
@@ -458,7 +458,7 @@ test('Export source from imported spectrum', async ({ page }) => {
   });
   await test.step('Open Save as window ', async () => {
     await nmrium.clickTool('exportAs');
-    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save data as');
+    await nmrium.page.click('_react=ToolbarPopoverItem  >> text=Save as');
   });
   await test.step('Check include data options', async () => {
     const fields = nmrium.page.locator(
@@ -495,7 +495,7 @@ test('Export source from imported spectrum', async ({ page }) => {
   await test.step('Check export NO Data', async () => {
     const downloadPromise = nmrium.page.waitForEvent('download');
     await nmrium.clickTool('exportAs');
-    await nmrium.page.click('_react=ToolbarPopoverItem >> text=Save data as');
+    await nmrium.page.click('_react=ToolbarPopoverItem >> text=Save as');
     await nmrium.page.click('_react=SaveAsModal >> text="No data"');
     await nmrium.page.click('_react=SaveAsModal >> button >> text=Save');
     const download = await downloadPromise;

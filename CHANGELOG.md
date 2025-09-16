@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.3.0](https://github.com/cheminfo/nmrium/compare/v1.2.1...v1.3.0) (2025-09-02)
+
+
+### Features
+
+* **slot:** support `topbar.about_us.modal` slot with fallback ([#3676](https://github.com/cheminfo/nmrium/issues/3676)) ([80562a3](https://github.com/cheminfo/nmrium/commit/80562a3f7b239dfe00c6fb0088bbdba90bbdca09))
+* support custom label edition on atom ([#3668](https://github.com/cheminfo/nmrium/issues/3668)) ([04e5ff7](https://github.com/cheminfo/nmrium/commit/04e5ff7cf15afbdf73faf280ec81d2871c4965a0))
+
+
+### Bug Fixes
+
+* add missing 'nbPoints' property to simulated spectrum ([#3630](https://github.com/cheminfo/nmrium/issues/3630)) ([60c6686](https://github.com/cheminfo/nmrium/commit/60c6686c426d921b94218cc1e8df91740a68d0f5))
+* display FFT second dimension after applying first dimension ([74f1947](https://github.com/cheminfo/nmrium/commit/74f194769855b5c9e8eb11fa7f642aad1853a0cb))
+* prevent adding molecule when molfile is corrupted ([33508e2](https://github.com/cheminfo/nmrium/commit/33508e273ca4e11e9374da4d6d6eb83eb4333a36))
+* prevent domain refresh when selecting Ft spectra ([b22e25c](https://github.com/cheminfo/nmrium/commit/b22e25c47f99cdcacb9c4f854d569015b8e7af0e))
+* support exporting floating molecules as SVG ([a647599](https://github.com/cheminfo/nmrium/commit/a647599aa7cd3ede59f1881b73bee77cba7f162a))
+* use selector for ReactRnd bounds ([ac0f511](https://github.com/cheminfo/nmrium/commit/ac0f51113f4755b1446fb062cd05fb6f18a5911a)), closes [#3669](https://github.com/cheminfo/nmrium/issues/3669)
+
+## [1.2.1](https://github.com/cheminfo/nmrium/compare/v1.2.0...v1.2.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* add '.zip' extension when exporting CT files ([b334685](https://github.com/cheminfo/nmrium/commit/b33468568ce2679759cb0af070f4e89971a13bdb))
+* correctly show fully processed live preview for apodization filter ([08651f6](https://github.com/cheminfo/nmrium/commit/08651f6709ab6df290f71e590c33dace9ecb16b8))
+* disable editing of read-only filters ([4808d0d](https://github.com/cheminfo/nmrium/commit/4808d0d6b7fdf3324331ebacf32de7d5e53b4144))
+* make printing use the same handling logic as export ([0545c33](https://github.com/cheminfo/nmrium/commit/0545c33cd48fe4c907b658683089d5eb2e627da3))
+* mark exclusion zones data as dirty to allow changes to be applied ([52bfafc](https://github.com/cheminfo/nmrium/commit/52bfafc6f974ecf18b34e98b8873e2b1b0f4daaa))
+* rollback to full processed spectrum when cancelling filter edit ([3499ea3](https://github.com/cheminfo/nmrium/commit/3499ea32a31f492305098b5ac46d1dc995636559)), closes [#3654](https://github.com/cheminfo/nmrium/issues/3654)
+
+## [1.2.0](https://github.com/cheminfo/nmrium/compare/v1.1.0...v1.2.0) (2025-08-21)
+
+
+### Features
+
+* support filter insertion after spectrum rollback ([1dd1f9e](https://github.com/cheminfo/nmrium/commit/1dd1f9e26c26baf59b9a12647390e4e2f5daafe6))
+
+
+### Bug Fixes
+
+* display feedback message when JSON export fails ([a5261af](https://github.com/cheminfo/nmrium/commit/a5261af9f895027e827fe13b69de9d6ae18db756))
+* exports mapping and update dependencies ([#3634](https://github.com/cheminfo/nmrium/issues/3634)) ([2a20938](https://github.com/cheminfo/nmrium/commit/2a2093830d1bfab1ebcb2cec53820ff92bba32c2))
+* handle jcamp filtering correctly during NMRium file load ([5ddd5af](https://github.com/cheminfo/nmrium/commit/5ddd5af3916aad9f367299d7ccb2fdf60a7bea44))
+* improve useFilter hook to safely handle empty filters ([a4b7cb8](https://github.com/cheminfo/nmrium/commit/a4b7cb87ad56370b83134a956c3164a928d37b13))
+* show 'No spectra available for export' message when no exportable spectra is present ([dbf20ee](https://github.com/cheminfo/nmrium/commit/dbf20ee64e4ebba64a68741be1f9770a5f6b6dd1))
+
+## [1.1.0](https://github.com/cheminfo/nmrium/compare/v1.0.0...v1.1.0) (2025-07-29)
+
+
+### Features
+
+* extend 2D prediction points range starting from 64 up to 4096 ([70f737f](https://github.com/cheminfo/nmrium/commit/70f737fa75e5c3435f5485db65862f9bcabe345c))
+* move 2D processing from experimental to stable feature ([5df91f3](https://github.com/cheminfo/nmrium/commit/5df91f340b29c4a0b68870f6da2626c5584d2594))
+* move inset tool from experimental to stable feature ([cf421fe](https://github.com/cheminfo/nmrium/commit/cf421fe86e69f936a46132a6a11e17904d1b444e))
+* **plugin:** support `topbar.right` plugin ui slot ([#3621](https://github.com/cheminfo/nmrium/issues/3621)) ([c353b3f](https://github.com/cheminfo/nmrium/commit/c353b3fdf44c3bddcc8e8bbc29fe1c3abb8de03d))
+
+## [1.0.0](https://github.com/cheminfo/nmrium/compare/v0.65.2...v1.0.0) (2025-07-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* `file-collection` is now used to manage data sources
+
+### Code Refactoring
+
+* remove `filelist-utils` and `jszip` for better alternatives ([#3615](https://github.com/cheminfo/nmrium/issues/3615)) ([c110206](https://github.com/cheminfo/nmrium/commit/c110206d74446e0697ba67e3cba3a83f69cf765c))
+
 ## [0.65.2](https://github.com/cheminfo/nmrium/compare/v0.65.1...v0.65.2) (2025-07-15)
 
 

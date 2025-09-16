@@ -24,13 +24,13 @@ function checkStatus(response) {
   return response;
 }
 
-const Title = styled.p`
-  text-transform: none;
+const Title = styled.div`
+  background-color: white;
+  color: #3e3e3e;
+  font-size: 14px;
   margin: 0;
   padding: 5px;
-  background-color: white;
-  font-size: 14px;
-  color: #3e3e3e;
+  text-transform: none;
 
   p {
     font-size: 10px;
@@ -51,42 +51,42 @@ const BottomContainer = styled.div`
 `;
 
 const BottomRightContainer = styled.div`
-  width: 50%;
   display: flex;
-  height: 100%;
   flex-direction: column;
+  height: 100%;
+  width: 50%;
 `;
 
 const MFContainer = styled.div`
-  height: 20%;
-  display: flex;
   align-items: center;
-  justify-content: center;
   background-color: white;
   border: 1px dashed gray;
+  display: flex;
+  height: 20%;
+  justify-content: center;
 `;
 
 const ResultContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 80%;
   position: relative;
+  align-items: center;
+  display: flex;
+  height: 80%;
+  justify-content: center;
 `;
 
 const InnerResultContainer = styled.div<
   Pick<CSSProperties, 'backgroundColor' | 'color'>
 >`
-  flex-direction: column;
-  padding: 10px;
-  margin-left: 30px;
+  align-items: center;
   background-color: ${({ backgroundColor }) => backgroundColor};
   color: ${({ color }) => color};
-  width: 80%;
-  height: 80%;
   display: flex;
+  flex-direction: column;
+  height: 80%;
   justify-content: center;
-  align-items: center;
+  margin-left: 30px;
+  padding: 10px;
+  width: 80%;
 `;
 
 const StructureEditorContainer = styled.div`
@@ -96,27 +96,27 @@ const StructureEditorContainer = styled.div`
 `;
 
 const ToggleButton = styled.button`
-  outline: none;
   border: none;
-  border-top: 0.55px solid #c1c1c1;
   border-bottom: 0.55px solid #c1c1c1;
+  border-top: 0.55px solid #c1c1c1;
   color: #00b707;
-  font-weight: bold;
   font-size: 12px;
+  font-weight: bold;
+  outline: none;
   padding: 5px;
 
-  &:hover {
-    color: white !important;
+  :hover {
     background-color: #00b707;
+    color: white !important;
   }
 `;
 
 const Container = styled.div`
-  height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  height: 100%;
   margin-left: 30px;
+  padding: 10px;
 `;
 
 interface ExerciceData extends NMRiumData {
@@ -189,7 +189,7 @@ export default function Exercise(props) {
     <Container>
       <Title>
         <strong>Exercises: </strong>Determine the unknown structure for the
-        compound having the following NMR spectrum
+        compound having the following NMR spectrum.
         <p>{title}</p>
       </Title>
       <MainContainer>

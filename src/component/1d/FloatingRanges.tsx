@@ -26,9 +26,9 @@ import { formatNumber } from '../utility/formatNumber.js';
 const ReactRnd = styled(Rnd)`
   border: 1px solid transparent;
 
-  &:hover {
-    border: 1px solid #ebecf1;
+  :hover {
     background-color: white;
+    border: 1px solid #ebecf1;
 
     button {
       visibility: visible;
@@ -76,7 +76,7 @@ function useMapRanges(ranges: Ranges['values']) {
         const { multiplicity, delta, js = [] } = signal;
         const coupling = js
           .map((jsItem) =>
-            !Number.isNaN(Number(jsItem.coupling))
+            !Number.isNaN(jsItem.coupling)
               ? formatNumber(jsItem.coupling, preferences.coupling.format)
               : '',
           )
@@ -303,7 +303,7 @@ function DraggableRanges(props: DraggablePublicationStringProps) {
       minHeight={50}
       dragHandleClassName="handle"
       enableUserSelectHack={false}
-      bounds={viewerRef}
+      bounds={`#${viewerRef.id}`}
       style={{ zIndex: 1 }}
       onDragStart={() => setIsMoveActive(true)}
       onResize={(e, dir, eRef, size, position) =>

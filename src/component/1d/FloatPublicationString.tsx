@@ -21,9 +21,9 @@ import { useCheckExportStatus } from '../hooks/useViewportSize.js';
 const ReactRnd = styled(Rnd)`
   border: 1px solid transparent;
 
-  &:hover {
-    border: 1px solid #ebecf1;
+  :hover {
     background-color: white;
+    border: 1px solid #ebecf1;
 
     button {
       visibility: visible;
@@ -265,7 +265,7 @@ function DraggablePublicationString(props: DraggablePublicationStringProps) {
       minHeight={50}
       dragHandleClassName="handle"
       enableUserSelectHack={false}
-      bounds={viewerRef}
+      bounds={`#${viewerRef.id}`}
       style={{ zIndex: 1 }}
       onDragStart={() => setIsMoveActive(true)}
       onResize={(e, dir, eRef, size, position) =>

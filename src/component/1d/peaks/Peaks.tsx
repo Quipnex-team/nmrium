@@ -71,12 +71,12 @@ function flatRangesPeaks(ranges: Range[]) {
 }
 
 function mapPeaks(peaks: Peak[], scale: (value: number) => number) {
-  return peaks
-    .map((peak) => ({
-      ...peak,
-      scaleX: scale(peak.x),
-    }))
-    .sort((p1, p2) => p2.x - p1.x);
+  const mappedPeaks = peaks.map((peak) => ({
+    ...peak,
+    scaleX: scale(peak.x),
+  }));
+  mappedPeaks.sort((p1, p2) => p2.x - p1.x);
+  return mappedPeaks;
 }
 
 function useMapPeaks(spectrum: Spectrum1D, filterBy: FilterPeaksBy) {
@@ -172,12 +172,8 @@ export default function Peaks(props) {
   const spectrum = useSpectrum(emptyData) as Spectrum1D;
   const peaksViewState = useActiveSpectrumPeaksViewState();
   const rangesViewState = useActiveSpectrumRangesViewState();
-  const {
-    deltaPPM: { format: peakFormat },
-  } = usePanelPreferences(
-    peaksSource === 'peaks' ? 'peaks' : 'ranges',
-    nucleus,
-  );
+  const { deltaPPM: { format: peakFormat } = { format: '0.0' } } =
+    usePanelPreferences(peaksSource === 'peaks' ? 'peaks' : 'ranges', nucleus);
 
   const canDisplaySpectrumPeaks =
     !spectrum.display.isVisible || spectrum.info?.isFid;

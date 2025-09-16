@@ -16,7 +16,7 @@ const boxPadding = 4;
 const Rect = styled.rect<{ isHighlighted: boolean }>`
   fill: ${({ isHighlighted }) => (isHighlighted ? '#ff6f0057' : 'transparent')};
 
-  &:hover {
+  :hover {
     fill: #ff6f0057;
   }
 `;
@@ -31,9 +31,9 @@ const InfoHeader = styled.div`
 `;
 
 const BaseText = styled.span`
-  text-align: center;
   flex: 1;
   font-size: 12px;
+  text-align: center;
 `;
 
 const Text = styled(BaseText)`

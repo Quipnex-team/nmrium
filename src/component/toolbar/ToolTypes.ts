@@ -82,7 +82,6 @@ export const options: RecordOptions = {
       },
     ],
     isToggle: true,
-    isExperimental: true,
   },
   zonePicking: {
     id: 'zonePicking',
@@ -373,7 +372,6 @@ export const options: RecordOptions = {
       },
     ],
     isToggle: false,
-    isExperimental: true,
   },
   fftDimension2: {
     id: 'fftDimension2',
@@ -384,14 +382,14 @@ export const options: RecordOptions = {
     spectraOptions: [
       {
         info: [
-          { key: 'isFid', value: true },
+          { key: 'isFtDimensionOne', value: true },
+          { key: 'isFt', value: false },
           { key: 'isComplex', value: true },
         ],
         active: true,
       },
     ],
     isToggle: false,
-    isExperimental: true,
   },
   phaseCorrectionTwoDimensions: {
     id: 'phaseCorrectionTwoDimensions',
@@ -405,7 +403,6 @@ export const options: RecordOptions = {
       },
     ],
     isToggle: true,
-    isExperimental: true,
   },
   import: {
     id: 'import',
@@ -480,7 +477,6 @@ export const options: RecordOptions = {
       },
     ],
     isToggle: true,
-    isExperimental: true,
   },
   apodizationDimension2: {
     id: Filters2D.apodizationDimension2.name,
@@ -499,6 +495,5 @@ export const options: RecordOptions = {
       },
     ],
     isToggle: true,
-    isExperimental: true,
   },
 };

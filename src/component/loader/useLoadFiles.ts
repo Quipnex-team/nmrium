@@ -1,4 +1,4 @@
-import { fileCollectionFromFileList } from 'filelist-utils';
+import { FileCollection } from 'file-collection';
 import type { ParseResult } from 'papaparse';
 import { useCallback } from 'react';
 
@@ -24,7 +24,7 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
     (files: File[]) => {
       dispatch({ type: 'SET_LOADING_FLAG', payload: { isLoading: true } });
 
-      async function loadFiles(files) {
+      async function loadFiles(files: File[]) {
         if (
           onOpenMetaInformation &&
           files.length === 1 &&
@@ -32,7 +32,9 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
         ) {
           onOpenMetaInformation(files[0]);
         } else {
-          const fileCollection = await fileCollectionFromFileList(files);
+          const fileCollection = await new FileCollection().appendFileList(
+            files,
+          );
           const metaFile = Object.values(fileCollection.files).find((file) =>
             isMetaFile(file),
           );
@@ -52,26 +54,11 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
             },
           );
 
-          // Add console logging for file drop debugging
-          console.log('=== FILE DROP DEBUG ===');
-          console.log('Full nmriumState:', nmriumState);
-          console.log('nmriumState.data:', nmriumState?.data);
-          console.log('nmriumState.data.spectra:', nmriumState?.data?.spectra);
-          console.log('Spectra count:', nmriumState?.data?.spectra?.length);
-          if (nmriumState?.data?.spectra?.[0]) {
-            console.log('First spectrum:', nmriumState.data.spectra[0]);
-            console.log('First spectrum data:', nmriumState.data.spectra[0].data);
-            console.log('First spectrum info:', nmriumState.data.spectra[0].info);
-          }
-          console.log('nmriumState.view:', nmriumState?.view);
-          console.log('nmriumState.settings:', nmriumState?.settings);
-          console.log('=====================');
-
-          if ((nmriumState as any)?.settings) {
+          if (nmriumState.settings) {
             dispatchPreferences({
               type: 'SET_WORKSPACE',
               payload: {
-                data: (nmriumState as any).settings,
+                data: nmriumState.settings,
                 workspaceSource: 'nmriumFile',
               },
             });
