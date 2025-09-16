@@ -13,4 +13,6 @@ export function applyGeneralPreferences(
   const { data } = action.payload;
 
   draft.workspaces[draft.workspace.current] = data as WorkspaceWithSource;
+  // Update originalWorkspaces to reflect the saved state
+  draft.originalWorkspaces[draft.workspace.current] = data as WorkspaceWithSource;
 }

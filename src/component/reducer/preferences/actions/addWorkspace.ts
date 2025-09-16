@@ -1,12 +1,10 @@
 import type { Draft } from 'immer';
 
-import { preferencesAPI } from '../../../utility/LocalStorage.js';
 import type {
   AddWorkspaceAction,
   PreferencesState,
   WorkspaceWithSource,
 } from '../preferencesReducer.js';
-import { filterUserWorkspaces } from '../utilities/filterUserWorkspaces.js';
 
 export function addWorkspace(
   draft: Draft<PreferencesState>,

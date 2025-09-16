@@ -52,6 +52,21 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
             },
           );
 
+          // Add console logging for file drop debugging
+          console.log('=== FILE DROP DEBUG ===');
+          console.log('Full nmriumState:', nmriumState);
+          console.log('nmriumState.data:', nmriumState?.data);
+          console.log('nmriumState.data.spectra:', nmriumState?.data?.spectra);
+          console.log('Spectra count:', nmriumState?.data?.spectra?.length);
+          if (nmriumState?.data?.spectra?.[0]) {
+            console.log('First spectrum:', nmriumState.data.spectra[0]);
+            console.log('First spectrum data:', nmriumState.data.spectra[0].data);
+            console.log('First spectrum info:', nmriumState.data.spectra[0].info);
+          }
+          console.log('nmriumState.view:', nmriumState?.view);
+          console.log('nmriumState.settings:', nmriumState?.settings);
+          console.log('=====================');
+
           if ((nmriumState as any)?.settings) {
             dispatchPreferences({
               type: 'SET_WORKSPACE',
@@ -61,6 +76,13 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
               },
             });
           }
+          console.log('Dispatching LOAD_DROP_FILES with:', { 
+            nmriumState, 
+            containsNmrium, 
+            parseMetaFileResult, 
+            spectraColors 
+          });
+          
           dispatch({
             type: 'LOAD_DROP_FILES',
             payload: {

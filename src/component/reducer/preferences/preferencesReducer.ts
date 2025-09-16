@@ -14,7 +14,7 @@ import type { Reducer } from 'react';
 import type { SplitPaneSize } from 'react-science/ui';
 
 import type { NMRiumPreferences, NMRiumWorkspace } from '../../main/index.js';
-import { getLocalStorage, preferencesAPI, storeData } from '../../utility/LocalStorage.js';
+import { getLocalStorage, storeData } from '../../utility/LocalStorage.js';
 import type { FilterType } from '../../utility/filterType.js';
 import Workspaces from '../../workspaces/index.js';
 import type { ActionType } from '../types/ActionType.js';
@@ -211,12 +211,63 @@ export const preferencesInitialState: PreferencesState = {
 };
 
 export function readSettings(): Settings {
-  const localData = getLocalStorage(LOCAL_STORAGE_SETTINGS_KEY) || {
-    version: CURRENT_EXPORT_VERSION,
-    currentWorkspace: null,
-    workspaces: {},
-  };
-  return migrateSettings(localData);
+  const localData = getLocalStorage(LOCAL_STORAGE_SETTINGS_KEY);
+  
+  // If no local data exists, return default settings without migration
+  if (!localData) {
+    return {
+      version: CURRENT_EXPORT_VERSION,
+      currentWorkspace: 'default',
+      workspaces: {
+        default: {
+          label: 'Default',
+          source: 'predefined',
+          visible: true,
+        },
+      },
+    };
+  }
+  
+  // Ensure workspaces property exists and is valid before migration
+  if (!localData.workspaces || typeof localData.workspaces !== 'object' || Object.keys(localData.workspaces).length === 0) {
+    localData.workspaces = {
+      default: {
+        label: 'Default',
+        source: 'predefined',
+        visible: true,
+      },
+    };
+  }
+  
+  // Ensure each workspace has the required structure
+  for (const key of Object.keys(localData.workspaces)) {
+    if (!localData.workspaces[key] || typeof localData.workspaces[key] !== 'object') {
+      localData.workspaces[key] = {
+        label: key,
+        source: 'user',
+        visible: true,
+      };
+    }
+  }
+  
+  try {
+    return migrateSettings(localData);
+  } catch (error) {
+    console.error('Failed to migrate settings:', error);
+    console.log('Returning default settings instead');
+    // If migration fails, return default settings
+    return {
+      version: CURRENT_EXPORT_VERSION,
+      currentWorkspace: 'default',
+      workspaces: {
+        default: {
+          label: 'Default',
+          source: 'predefined',
+          visible: true,
+        },
+      },
+    };
+  }
 }
 
 export function updateSettings(settings: Settings) {

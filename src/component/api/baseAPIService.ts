@@ -1,4 +1,4 @@
-import { getAPIConfig } from "../utility/LocalStorage.ts";
+import { getAPIConfig } from "./apiConfig.js";
 
 export class BaseAPIService {
     private cache = new Map<string, { data: any; timestamp: number }>();

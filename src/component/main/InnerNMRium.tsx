@@ -1,7 +1,9 @@
 import init from '@zakodium/nmrium-core-plugins';
 import type { ForwardedRef } from 'react';
-import { useEffect, useMemo, useReducer, useRef } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useFullscreen } from 'react-science/ui';
+
+import { spectraAPI } from '../api/spectraAPIService.js';
 
 import { AssignmentProvider } from '../assignment/AssignmentProvider.js';
 import { CoreProvider } from '../context/CoreContext.js';
@@ -59,6 +61,7 @@ export function InnerNMRium(props: InnerNMRiumProps) {
   const viewerRef = useRef<HTMLDivElement>(null);
   const mainDivRef = useRef<HTMLDivElement>(null);
   const { isFullScreen } = useFullscreen();
+  const [loadedNMRiumData, setLoadedNMRiumData] = useState(nmriumData);
 
   const finalCore = useMemo(() => {
     if (!core) return init();
@@ -87,23 +90,53 @@ export function InnerNMRium(props: InnerNMRiumProps) {
     }
   }, [apiConfig]);
 
-  // // Use server storage hook if API is configured
-  // const { migrateToServer, isMigrationComplete } = useLocalStorageMigration();
-
-  // // Trigger migration if server sync is enabled and not yet migrated
-  // useEffect(() => {
-  //   if (apiConfig?.enableSync && !isMigrationComplete()) {
-  //     migrateToServer().catch(error => {
-  //       console.error('Failed to migrate to server:', error);
-  //     });
-  //   }
-  // }, [apiConfig?.enableSync, isMigrationComplete, migrateToServer]);
-
   const [preferencesState, dispatchPreferences] = useReducer(
     preferencesReducer,
     preferencesInitialState,
     initPreferencesState,
   );
+
+  // Auto-load user's most recent spectrum for the current workspace on startup if no data provided
+  useEffect(() => {
+    async function loadLastSpectrum() {
+      try {
+        if (apiConfig?.enableSync && preferencesState.workspace?.current) {
+          // Get spectra for the current workspace only
+          const currentWorkspaceId = preferencesState.workspace.current;
+          const spectraList = await spectraAPI.getSpectraList(currentWorkspaceId);
+          if (spectraList.length > 0) {
+            const lastSpectrum = spectraList[0]; // Already sorted by -updated
+            const spectrumData = await spectraAPI.loadSpectrum(lastSpectrum.id?.toString() || '');
+            
+            if (spectrumData && spectrumData.data) {
+              // Transform data back to NMRium format (backend saves with spectra at top level)
+              const nmriumFormat = {
+                data: {
+                  spectra: spectrumData.data.spectra || [],
+                  molecules: spectrumData.data.molecules || [],
+                  correlations: spectrumData.data.correlations || {}
+                },
+                version: spectrumData.data.version,
+                view: spectrumData.data.view
+              };
+              setLoadedNMRiumData(nmriumFormat);
+              console.log(`Loaded spectrum "${lastSpectrum.name}" for workspace "${currentWorkspaceId}"`);
+            }
+          } else {
+            console.log(`No saved spectra found for workspace "${currentWorkspaceId}"`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load saved spectrum:', error);
+        // Don't show user error for auto-load failure, just continue with empty state
+      }
+    }
+    
+    // Only auto-load if no data provided and server sync is enabled
+    if (!nmriumData && apiConfig?.enableSync) {
+      loadLastSpectrum();
+    }
+  }, [apiConfig?.enableSync, nmriumData, preferencesState.workspace?.current]);
 
   // Use server storage for preferences if enabled
   const [serverPrefs, setServerPrefs, { loading: serverLoading }] = useStateWithServerStorage(
@@ -173,7 +206,7 @@ export function InnerNMRium(props: InnerNMRiumProps) {
                     <SortSpectraProvider>
                       <NMRiumStateProvider
                         onChange={onChange}
-                        nmriumData={nmriumData}
+                        nmriumData={loadedNMRiumData}
                       >
                         <TopicMoleculeProvider>
                           <DialogProvider>

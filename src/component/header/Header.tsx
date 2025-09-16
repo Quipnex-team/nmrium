@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import {
   FaFilm,
   FaQuestionCircle,
@@ -196,14 +196,52 @@ function HeaderInner(props: HeaderInnerProps) {
 
 function SaveButton() {
   const { workspace, workspaces, originalWorkspaces } = usePreferences();
-  const { saveSettings, SaveSettingsModal } = useSaveSettings();
+  const { saveSettings, SaveSettingsModal, lastSavedAt } = useSaveSettings();
+  const [isDirty, setIsDirty] = useState(false);
+
   const isWorkspaceHasSettingNotSaved =
     JSON.stringify(workspaces[workspace.current]) !==
     JSON.stringify(originalWorkspaces[workspace.current]);
 
+  // Track spectra changes using localStorage flag
+  useEffect(() => {
+    const checkDirtyState = () => {
+      const dirty = localStorage.getItem('nmrium_data_dirty') === 'true';
+      setIsDirty(dirty);
+    };
+
+    // Check initial state
+    checkDirtyState();
+
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'nmrium_data_dirty') {
+        setIsDirty(e.newValue === 'true');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check periodically in case localStorage is updated in same tab
+    const interval = setInterval(checkDirtyState, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const hasUnsavedChanges = isWorkspaceHasSettingNotSaved || isDirty;
+
   function handleSave() {
     saveSettings();
+    setIsDirty(false);
+    localStorage.setItem('nmrium_data_dirty', 'false');
   }
+
+  const tooltipText = `Save workspace and spectra${
+    lastSavedAt ? ` (Last saved: ${lastSavedAt.toLocaleTimeString()})` : ''
+  }`;
 
   return (
     <>
@@ -212,12 +250,12 @@ function SaveButton() {
         onClick={handleSave}
         fill="clear"
         style={{ fontSize: '1.4em', marginLeft: '5px' }}
-        {...(!isWorkspaceHasSettingNotSaved && {
+        {...(!hasUnsavedChanges && {
           color: { base: 'gray', hover: 'gray' },
           backgroundColor: { base: 'gray', hover: 'lightgray' },
           disabled: true,
         })}
-        toolTip="Save workspace"
+        toolTip={tooltipText}
       >
         <FaRegSave />
       </Button.Done>

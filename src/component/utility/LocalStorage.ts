@@ -42,24 +42,8 @@ export function getValue(object, keyPath, defaultValue: any = null) {
   return dlv(object, keyPath, defaultValue);
 }
 
-// API Configuration
-interface APIConfig {
-  baseURL: string;
-  token?: string;
-  headers?: Record<string, string>;
-}
-
-let apiConfig: APIConfig = {
-  baseURL: ''
-};
-
-export function setAPIConfig(config: APIConfig) {
-  apiConfig = { ...config };
-}
-
-export function getAPIConfig(): APIConfig {
-  return apiConfig;
-}
+// Re-export API configuration from dedicated module
+export { setAPIConfig, getAPIConfig, type APIConfig } from '../api/apiConfig.js';
 
 // Enhanced hook with server-side storage support
 export function useStateWithServerStorage(
@@ -255,15 +239,15 @@ export function useStateWithServerStorage(
     syncWithServer();
 
     // Set up periodic sync
-    if (syncInterval > 0) {
-      const interval = setInterval(() => {
-        if (Date.now() - lastSyncRef.current >= syncInterval) {
-          syncWithServer();
-        }
-      }, syncInterval);
+    // if (syncInterval > 0) {
+    //   const interval = setInterval(() => {
+    //     if (Date.now() - lastSyncRef.current >= syncInterval) {
+    //       syncWithServer();
+    //     }
+    //   }, syncInterval);
 
-      return () => clearInterval(interval);
-    }
+    //   return () => clearInterval(interval);
+    // }
   }, [localStorageKey, value, useServer, syncInterval, offlineSupport]);
 
   const setData = useCallback(

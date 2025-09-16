@@ -161,27 +161,26 @@ export function useWorkspaceAction() {
       console.error('Failed to update workspace on server:', error);
     });
     
-    // Update workspace preferences as sections (if data provided)
-    if (data) {
-      const workspaceId = workspace.current === 'default' ? undefined : workspace.current;
-      
-      // Update preference sections for this workspace
-      const sectionUpdates = [
-        { section: 'panels', preferences: data.panels },
-        { section: 'display', preferences: data.display },
-        { section: 'general', preferences: data.general },
-        { section: 'export', preferences: data.export },
-        { section: 'print', preferences: data.printPageOptions },
-      ];
-      
-      sectionUpdates.forEach(({ section, preferences }) => {
-        if (preferences && Object.keys(preferences).length > 0) {
-          preferencesAPI.updatePreferenceSection(section, preferences, workspaceId).catch(error => {
-            console.error(`Failed to update ${section} section for workspace:`, error);
-          });
-        }
-      });
-    }
+    // Update workspace preferences as sections (always update to keep in sync)
+    const actualData = data || current;
+    const workspaceId = workspace.current === 'default' ? undefined : workspace.current;
+
+    // Update preference sections for this workspace
+    const sectionUpdates = [
+      { section: 'panels', preferences: actualData.panels },
+      { section: 'display', preferences: actualData.display },
+      { section: 'general', preferences: actualData.general },
+      { section: 'export', preferences: actualData.export },
+      { section: 'print', preferences: actualData.printPageOptions },
+    ];
+
+    sectionUpdates.forEach(({ section, preferences }) => {
+      if (preferences && Object.keys(preferences).length > 0) {
+        preferencesAPI.updatePreferenceSection(section, preferences, workspaceId).catch(error => {
+          console.error(`Failed to update ${section} section for workspace:`, error);
+        });
+      }
+    });
     
     updateSettings({
       ...settings,

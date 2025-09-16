@@ -1,5 +1,4 @@
-import { getAPIConfig } from "../utility/LocalStorage.ts";
-import { BaseAPIService } from "./baseAPIService.ts";
+import { BaseAPIService } from "./baseAPIService.js";
 
 // API Service for preferences
 interface WorkspaceData {
