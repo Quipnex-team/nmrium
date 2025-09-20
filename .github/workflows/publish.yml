@@ -1,4 +1,4 @@
-name: nmrium gh-pages tag publish
+name: nmrium tag publish
 
 on:
   push:
@@ -16,7 +16,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm i -g gh-pages
       - name: Update version number
         run: |
           VERSION=${GITHUB_REF//*\/}
@@ -32,10 +31,7 @@ jobs:
         run: |
           rm -rf build/data
           rm -rf build/exercises
-      - name: Push to gh-pages
-        run: |
-          git config user.email luc@patiny.com
-          git config user.name "Luc Patiny"
-          git remote set-url origin "https://lpatiny:${{ secrets.ACCESS_NMRIUM }}@github.com/zakodium/cdn.nmrium.org.git"
-          VERSION=${GITHUB_REF//*\/}
-          gh-pages --dest $VERSION -d build --dotfiles
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
