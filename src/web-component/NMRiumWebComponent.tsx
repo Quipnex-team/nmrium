@@ -1,6 +1,6 @@
-import type { ReactElement } from 'react';
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import type { NMRiumData, NMRiumPreferences, NMRiumWorkspace } from '../component/main/index.js';
 import { NMRium } from '../component/main/index.js';
@@ -27,7 +27,7 @@ export interface NMRiumWebComponentProps {
 export class NMRiumWebComponent extends HTMLElement {
   private root: Root | null = null;
   private props: NMRiumWebComponentProps = {};
-  private isConnected = false;
+  private isConnectedToDOM = false;
 
   // Define observed attributes for the web component
   static get observedAttributes(): string[] {
@@ -42,12 +42,12 @@ export class NMRiumWebComponent extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.isConnected = true;
+    this.isConnectedToDOM = true;
     this.render();
   }
 
   disconnectedCallback(): void {
-    this.isConnected = false;
+    this.isConnectedToDOM = false;
     if (this.root) {
       // Cleanup React
       this.root.unmount();
@@ -81,7 +81,7 @@ export class NMRiumWebComponent extends HTMLElement {
     }
 
     // Re-render if connected
-    if (this.isConnected) {
+    if (this.isConnectedToDOM) {
       this.render();
     }
   }
@@ -187,7 +187,7 @@ export class NMRiumWebComponent extends HTMLElement {
   };
 
   private render(): void {
-    if (!this.isConnected) return;
+    if (!this.isConnectedToDOM) return;
 
     // Create root if it doesn't exist
     if (!this.root) {
@@ -203,18 +203,18 @@ export class NMRiumWebComponent extends HTMLElement {
       this.appendChild(container);
 
       // Create React root
-      this.root = ReactDOM.createRoot(container);
+      this.root = createRoot(container);
     }
 
     // Create the React element with all props
-    const element: ReactElement = React.createElement(NMRium, {
+    const element = createElement(NMRium, {
       ...this.props,
       onChange: this.handleChange,
       onError: this.handleError,
       // Add additional handlers if they become available in NMRium
       // onPreferencesChange: this.handlePreferencesChange,
       // onWorkspaceChange: this.handleWorkspaceChange,
-    });
+    } as any);
 
     // Render the React component
     this.root.render(element);
