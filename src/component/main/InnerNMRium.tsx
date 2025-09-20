@@ -110,7 +110,7 @@ export function InnerNMRium(props: InnerNMRiumProps) {
             
             if (spectrumData && spectrumData.data) {
               // Transform data back to NMRium format (backend saves with spectra at top level)
-              const nmriumFormat = {
+              const nmriumFormat: any = {
                 data: {
                   spectra: spectrumData.data.spectra || [],
                   molecules: spectrumData.data.molecules || [],

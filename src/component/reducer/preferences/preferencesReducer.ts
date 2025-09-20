@@ -61,7 +61,7 @@ export const WORKSPACES_KEYS = {
 export interface Settings {
   version: number;
   workspaces: Record<string, WorkspaceWithSource>;
-  currentWorkspace;
+  currentWorkspace: string;
 }
 
 type InitPreferencesAction = ActionType<
@@ -212,7 +212,7 @@ export const preferencesInitialState: PreferencesState = {
 
 export function readSettings(): Settings {
   const localData = getLocalStorage(LOCAL_STORAGE_SETTINGS_KEY);
-  
+
   // If no local data exists, return default settings without migration
   if (!localData) {
     return {
@@ -220,10 +220,9 @@ export function readSettings(): Settings {
       currentWorkspace: 'default',
       workspaces: {
         default: {
-          label: 'Default',
-          source: 'predefined',
-          visible: true,
-        },
+          ...Workspaces.default,
+          source: 'predefined' as WorkSpaceSource,
+        } as WorkspaceWithSource,
       },
     };
   }
@@ -232,21 +231,22 @@ export function readSettings(): Settings {
   if (!localData.workspaces || typeof localData.workspaces !== 'object' || Object.keys(localData.workspaces).length === 0) {
     localData.workspaces = {
       default: {
-        label: 'Default',
-        source: 'predefined',
-        visible: true,
-      },
+        ...Workspaces.default,
+        source: 'predefined' as WorkSpaceSource,
+      } as WorkspaceWithSource,
     };
   }
-  
+
   // Ensure each workspace has the required structure
   for (const key of Object.keys(localData.workspaces)) {
     if (!localData.workspaces[key] || typeof localData.workspaces[key] !== 'object') {
+      // Use default workspace as template if available
+      const baseWorkspace = Workspaces[key] || Workspaces.default;
       localData.workspaces[key] = {
-        label: key,
-        source: 'user',
-        visible: true,
-      };
+        ...baseWorkspace,
+        label: localData.workspaces[key]?.label || key,
+        source: (localData.workspaces[key]?.source || 'user') as WorkSpaceSource,
+      } as WorkspaceWithSource;
     }
   }
   
@@ -261,10 +261,9 @@ export function readSettings(): Settings {
       currentWorkspace: 'default',
       workspaces: {
         default: {
-          label: 'Default',
-          source: 'predefined',
-          visible: true,
-        },
+          ...Workspaces.default,
+          source: 'predefined' as WorkSpaceSource,
+        } as WorkspaceWithSource,
       },
     };
   }
