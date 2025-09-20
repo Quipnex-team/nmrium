@@ -5,11 +5,17 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./lib/component/main/index.js"
+    ".": "./lib/component/main/index.js",
+    "./web-component": {
+      "import": "./dist/web-component/nmrium-webcomponent.es.js",
+      "require": "./dist/web-component/nmrium-webcomponent.umd.js",
+      "types": "./dist/web-component/nmrium-element.d.ts"
+    }
   },
   "files": [
     "lib",
-    "src"
+    "src",
+    "dist/web-component"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
@@ -21,6 +27,8 @@
     "build-cloudflare": "npm run set-version-sha && npm run build-with-profiling && npm run copy-samples-toc",
     "build-no-minify": "cross-env NO_MINIFY=true npm run build",
     "build-with-profiling": "cross-env WITH_PROFILING=true NO_MINIFY=true npm run build",
+    "build-web-component": "vite build --config vite.config.webcomponent.ts",
+    "build-all": "npm run compile && npm run build-web-component",
     "check-types": "tsc --noEmit",
     "compile": "tsc --project tsconfig.build.json",
     "copy-samples-toc": "cp src/demo/samples.json build/",
@@ -31,8 +39,8 @@
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
     "knip": "knip",
     "playwright": "playwright test --ui",
-    "prepack": "npm run clean-lib && npm run compile",
-    "prepublishOnly": "npm run set-version-npm",
+    "prepack": "npm run clean-lib && npm run build-all",
+    "prepublishOnly": "npm run set-version-npm && npm run build-web-component",
     "prettier": "prettier --check src test-e2e",
     "prettier-write": "prettier --write src test-e2e",
     "set-version-npm": "VERSION=$(jq .version package.json | tr -d '\"') && echo \"export default { version: 'v$VERSION' };\" > src/versionInfo.ts",

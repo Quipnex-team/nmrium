@@ -1,0 +1,202 @@
+name: Publish @dongkichan/qx-nmrium Package
+
+on:
+  push:
+    branches:
+      - qx-integration
+      - main  # Also trigger on main if you want
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - '.github/workflows/publish-nmrium.yml'
+  pull_request:
+    branches:
+      - qx-integration
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      publish_only_web_component:
+        description: 'Publish only web component (not full library)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  build-and-publish:
+    # Skip if PR was closed without merging
+    if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@dongkichan'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: |
+          npm run check-types
+          npm run test-only
+
+      - name: Build library (required for web component)
+        run: npm run compile
+
+      - name: Build web component only
+        run: npm run build-web-component
+
+      - name: Verify web component build
+        run: |
+          echo "Checking web component build output..."
+          ls -la dist/web-component/
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Bump version
+        id: version
+        run: |
+          # Determine version bump type
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION_TYPE="${{ github.event.inputs.version_type }}"
+          else
+            # Auto-detect version type based on commit message
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            if [[ $COMMIT_MSG == *"BREAKING CHANGE"* ]] || [[ $COMMIT_MSG == *"major:"* ]]; then
+              VERSION_TYPE="major"
+            elif [[ $COMMIT_MSG == *"feat:"* ]] || [[ $COMMIT_MSG == *"feature:"* ]]; then
+              VERSION_TYPE="minor"
+            else
+              VERSION_TYPE="patch"
+            fi
+          fi
+
+          echo "Version bump type: $VERSION_TYPE"
+          npm version $VERSION_TYPE -m "chore: bump version to %s [skip ci]"
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Copy TypeScript definitions
+        run: |
+          # Ensure TypeScript definitions are in the dist folder
+          cp src/web-component/nmrium-element.d.ts dist/web-component/
+
+      - name: Create .npmrc
+        run: |
+          echo "@dongkichan:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push version changes
+        run: |
+          git push origin HEAD:${{ github.ref }}
+          git push origin --tags
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.NEW_VERSION }}
+          release_name: QX-NMRium v${{ steps.version.outputs.NEW_VERSION }}
+          body: |
+            ## 🚀 @dongkichan/qx-nmrium v${{ steps.version.outputs.NEW_VERSION }}
+
+            This is a forked version of NMRium with additional features for QuipNex integration.
+
+            ### Installation
+            ```bash
+            npm install @dongkichan/qx-nmrium@${{ steps.version.outputs.NEW_VERSION }}
+            ```
+
+            ### Usage as React Component
+            ```typescript
+            import { NMRium } from '@dongkichan/qx-nmrium';
+            ```
+
+            ### Usage as Web Component (Angular/Vue/etc)
+            ```typescript
+            import '@dongkichan/qx-nmrium/web-component';
+            ```
+
+            ### Features
+            - Full NMRium functionality
+            - Web Component wrapper for framework-agnostic usage
+            - API backend integration support
+            - Enhanced workspace management
+            - TypeScript definitions
+            - Angular integration ready
+
+            ### Changes
+            - See commit history for detailed changes
+
+            ### Branch: qx-integration
+            This release is from the qx-integration branch with QuipNex-specific enhancements.
+          draft: false
+          prerelease: false
+
+      - name: Update package-lock.json
+        run: |
+          npm install --package-lock-only
+          git add package-lock.json
+          git diff --staged --quiet || git commit -m "chore: update package-lock.json [skip ci]"
+          git push origin HEAD:${{ github.ref }}
+
+  notify:
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Notify success
+        if: needs.build-and-publish.result == 'success'
+        run: |
+          echo "✅ Package published successfully!"
+          echo "📦 Install with: npm install @dongkichan/qx-nmrium"
+
+      - name: Notify failure
+        if: needs.build-and-publish.result == 'failure'
+        run: |
+          echo "❌ Package publish failed!"
+          exit 1

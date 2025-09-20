@@ -1,9 +1,10 @@
-name: Release
+name: Release (DISABLED - Using QX version)
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Disabled automatic trigger, only manual
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   release:

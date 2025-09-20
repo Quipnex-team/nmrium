@@ -1,9 +1,10 @@
-name: nmrium tag publish
+name: nmrium tag publish (DISABLED - Using QX version)
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:  # Disabled automatic trigger, only manual
+  # push:
+  #   tags:
+  #     - '*'
 
 jobs:
   build:
