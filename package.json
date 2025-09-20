@@ -7,9 +7,9 @@
   "exports": {
     ".": "./lib/component/main/index.js",
     "./web-component": {
+      "types": "./dist/web-component/nmrium-element.d.ts",
       "import": "./dist/web-component/nmrium-webcomponent.es.js",
-      "require": "./dist/web-component/nmrium-webcomponent.umd.js",
-      "types": "./dist/web-component/nmrium-element.d.ts"
+      "require": "./dist/web-component/nmrium-webcomponent.umd.js"
     }
   },
   "files": [
@@ -156,6 +156,7 @@
     "serve": "^14.2.5",
     "stylelint": "^16.24.0",
     "stylelint-config-standard": "^39.0.0",
+    "terser": "^5.44.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
     "vitest": "^3.2.4"
