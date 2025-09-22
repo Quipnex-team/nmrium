@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/**'
       - 'package.json'
+      - 'vite.config.webcomponent.ts'
       - '.github/workflows/publish-nmrium.yml'
   pull_request:
     branches:
