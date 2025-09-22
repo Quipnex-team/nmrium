@@ -28,11 +28,14 @@ export default defineConfig({
         comments: false,
       },
     },
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         // Ensure React is bundled with the component
         globals: {},
         assetFileNames: 'nmrium-webcomponent.[ext]',
+        // Inline CSS into JS bundle for self-contained web component
+        inlineDynamicImports: true,
       },
     },
   },
