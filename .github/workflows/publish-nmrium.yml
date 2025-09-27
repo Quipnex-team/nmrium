@@ -1,4 +1,4 @@
-name: Publish @dongkichan/qx-nmrium Package
+name: Publish @quipnex/qx-nmrium Package
 
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
         with:
           node-version: '22.x'
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@dongkichan'
+          scope: '@quipnex'
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -121,7 +121,7 @@ jobs:
 
       - name: Create .npmrc
         run: |
-          echo "@dongkichan:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "@quipnex:registry=https://npm.pkg.github.com" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
 
       - name: Publish to GitHub Packages
@@ -142,23 +142,23 @@ jobs:
           tag_name: v${{ steps.version.outputs.NEW_VERSION }}
           release_name: QX-NMRium v${{ steps.version.outputs.NEW_VERSION }}
           body: |
-            ## 🚀 @dongkichan/qx-nmrium v${{ steps.version.outputs.NEW_VERSION }}
+            ## 🚀 @quipnex/qx-nmrium v${{ steps.version.outputs.NEW_VERSION }}
 
             This is a forked version of NMRium with additional features for QuipNex integration.
 
             ### Installation
             ```bash
-            npm install @dongkichan/qx-nmrium@${{ steps.version.outputs.NEW_VERSION }}
+            npm install @quipnex/qx-nmrium@${{ steps.version.outputs.NEW_VERSION }}
             ```
 
             ### Usage as React Component
             ```typescript
-            import { NMRium } from '@dongkichan/qx-nmrium';
+            import { NMRium } from '@quipnex/qx-nmrium';
             ```
 
             ### Usage as Web Component (Angular/Vue/etc)
             ```typescript
-            import '@dongkichan/qx-nmrium/web-component';
+            import '@quipnex/qx-nmrium/web-component';
             ```
 
             ### Features
@@ -173,7 +173,7 @@ jobs:
             - See commit history for detailed changes
 
             ### Branch: qx-integration
-            This release is from the qx-integration branch with QuipNex-specific enhancements.
+            This release is from the qx-integration branch with Quipnex-specific enhancements.
           draft: false
           prerelease: false
 
@@ -194,7 +194,7 @@ jobs:
         if: needs.build-and-publish.result == 'success'
         run: |
           echo "✅ Package published successfully!"
-          echo "📦 Install with: npm install @dongkichan/qx-nmrium"
+          echo "📦 Install with: npm install @quipnex/qx-nmrium"
 
       - name: Notify failure
         if: needs.build-and-publish.result == 'failure'
