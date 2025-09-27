@@ -1,4 +1,4 @@
-name: Publish @quipnex/nmrium Package
+name: Publish @quipnex-team/nmrium Package
 
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
         with:
           node-version: '22.x'
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@quipnex'
+          scope: '@quipnex-team'
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -121,7 +121,7 @@ jobs:
 
       - name: Create .npmrc
         run: |
-          echo "@quipnex:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "@quipnex-team:registry=https://npm.pkg.github.com" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.PACKAGE_TOKEN }}" >> ~/.npmrc
 
       - name: Publish to GitHub Packages
@@ -142,23 +142,23 @@ jobs:
           tag_name: v${{ steps.version.outputs.NEW_VERSION }}
           release_name: QX-NMRium v${{ steps.version.outputs.NEW_VERSION }}
           body: |
-            ## 🚀 @quipnex/nmrium v${{ steps.version.outputs.NEW_VERSION }}
+            ## 🚀 @quipnex-team/nmrium v${{ steps.version.outputs.NEW_VERSION }}
 
-            This is a forked version of NMRium with additional features for QuipNex integration.
+            This is a forked version of NMRium with additional features for Quipnex integration.
 
             ### Installation
             ```bash
-            npm install @quipnex/nmrium@${{ steps.version.outputs.NEW_VERSION }}
+            npm install @quipnex-team/nmrium@${{ steps.version.outputs.NEW_VERSION }}
             ```
 
             ### Usage as React Component
             ```typescript
-            import { NMRium } from '@quipnex/nmrium';
+            import { NMRium } from '@quipnex-team/nmrium';
             ```
 
             ### Usage as Web Component (Angular/Vue/etc)
             ```typescript
-            import '@quipnex/nmrium/web-component';
+            import '@quipnex-team/nmrium/web-component';
             ```
 
             ### Features
@@ -194,7 +194,7 @@ jobs:
         if: needs.build-and-publish.result == 'success'
         run: |
           echo "✅ Package published successfully!"
-          echo "📦 Install with: npm install @quipnex/nmrium"
+          echo "📦 Install with: npm install @quipnex-team/nmrium"
 
       - name: Notify failure
         if: needs.build-and-publish.result == 'failure'
