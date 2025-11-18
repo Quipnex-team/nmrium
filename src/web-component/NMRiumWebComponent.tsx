@@ -1,9 +1,10 @@
 import React from 'react';
-import { createElement } from 'react';
+import { createRef, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import type { NMRiumData, NMRiumPreferences, NMRiumWorkspace } from '../component/main/index.js';
 import { NMRium } from '../component/main/index.js';
+import type { NMRiumRefAPI } from '../component/main/index.js';
 
 export interface NMRiumWebComponentProps {
   data?: NMRiumData;
@@ -28,6 +29,7 @@ export class NMRiumWebComponent extends HTMLElement {
   private root: Root | null = null;
   private props: NMRiumWebComponentProps = {};
   private isConnectedToDOM = false;
+  private nmriumRef = createRef<NMRiumRefAPI>();
 
   // Define observed attributes for the web component
   static get observedAttributes(): string[] {
@@ -206,11 +208,12 @@ export class NMRiumWebComponent extends HTMLElement {
       this.root = createRoot(container);
     }
 
-    // Create the React element with all props
+    // Create the React element with all props and ref
     const element = createElement(NMRium, {
       ...this.props,
       onChange: this.handleChange,
       onError: this.handleError,
+      ref: this.nmriumRef,
       // Add additional handlers if they become available in NMRium
       // onPreferencesChange: this.handlePreferencesChange,
       // onWorkspaceChange: this.handleWorkspaceChange,
@@ -239,6 +242,15 @@ export class NMRiumWebComponent extends HTMLElement {
       return this.props.data;
     }
     throw new Error(`Export format ${format} not yet implemented`);
+  }
+
+  // Method to load files programmatically
+  public loadFiles(files: File[]): void {
+    if (this.nmriumRef.current) {
+      this.nmriumRef.current.loadFiles(files);
+    } else {
+      console.warn('NMRium ref not available yet. Cannot load files.');
+    }
   }
 }
 

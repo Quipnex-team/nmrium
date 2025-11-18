@@ -57,6 +57,8 @@ declare global {
 
     exportAs(format: 'json' | 'jcamp' | 'nmredata' | 'svg' | 'png'): Promise<any>;
 
+    loadFiles(files: File[]): void;
+
     // Event listeners
     addEventListener<K extends keyof NMRiumEventMap>(
       type: K,
