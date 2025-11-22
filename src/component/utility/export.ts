@@ -27,7 +27,6 @@ async function exportAsJSON(
   spaceIndent = 0,
   isCompressed = false,
 ) {
-  console.log(data);
   const fileData = JSON.stringify(
     data,
     (key, value) =>

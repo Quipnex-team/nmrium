@@ -89,8 +89,6 @@ export default function NMRiumStateProvider(props: NMRiumStateProviderProps) {
   useEffect(() => {
     // trigger onChange callback if data object changed
     if (checkActionType(actionType)) {
-      // Mark as dirty when data changes
-      localStorage.setItem('nmrium_data_dirty', 'true');
       handleChange.current?.(stateRef.current as NmriumState, 'data');
     }
   }, [actionType, correlations, molecules, source, spectraData]);
@@ -136,21 +134,6 @@ export default function NMRiumStateProvider(props: NMRiumStateProviderProps) {
         });
     }
   }, [nmriumData, dispatch, dispatchPreferences, core]);
-
-  // Add beforeunload listener for unsaved changes warning
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      const isDirty = localStorage.getItem('nmrium_data_dirty') === 'true';
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-      }
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
   const { sortOptions } = useSortSpectra();
 
   const spectra = useMemo(() => {

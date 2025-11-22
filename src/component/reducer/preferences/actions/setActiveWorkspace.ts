@@ -12,8 +12,5 @@ export function setActiveWorkspace(
   if (action.payload) {
     const { workspace } = action.payload;
     draft.workspace.current = workspace;
-    
-    // Server sync is now handled in useWorkspaceAction via workspace API
-    // No API call needed here
   }
 }

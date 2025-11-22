@@ -63,13 +63,6 @@ export function useLoadFiles(onOpenMetaInformation?: (file: File) => void) {
               },
             });
           }
-          console.log('Dispatching LOAD_DROP_FILES with:', { 
-            nmriumState, 
-            containsNmrium, 
-            parseMetaFileResult, 
-            spectraColors 
-          });
-          
           dispatch({
             type: 'LOAD_DROP_FILES',
             payload: {

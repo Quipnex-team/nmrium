@@ -7,9 +7,14 @@
   "exports": {
     ".": "./lib/component/main/index.js",
     "./web-component": {
-      "types": "./dist/web-component/nmrium-element.d.ts",
+      "types": "./dist/web-component/index.d.ts",
       "import": "./dist/web-component/nmrium-webcomponent.es.js",
       "require": "./dist/web-component/nmrium-webcomponent.umd.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "web-component": ["./dist/web-component/index.d.ts"]
     }
   },
   "files": [

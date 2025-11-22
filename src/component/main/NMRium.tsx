@@ -28,25 +28,15 @@ export interface NMRiumProps {
    */
   getSpinner?: () => ReactElement;
   core?: NMRiumCore;
-  /**
-   * API configuration for server-side preferences sync
-   */
-  apiConfig?: {
-    baseURL: string;
-    token: string;
-    headers?: Record<string, string>;
-    enableSync?: boolean;
-    syncInterval?: number;
-  };
 }
 
 const NMRiumBase = forwardRef<NMRiumRefAPI, NMRiumProps>(function NMRium(
   props: NMRiumProps,
   ref,
 ) {
-  const { noErrorBoundary = false, onError, apiConfig, ...otherProps } = props;
+  const { noErrorBoundary = false, onError, ...otherProps } = props;
 
-  const innerNmrium = <InnerNMRium {...otherProps} apiConfig={apiConfig} apiRef={ref} />;
+  const innerNmrium = <InnerNMRium {...otherProps} apiRef={ref} />;
 
   const children = noErrorBoundary ? (
     innerNmrium

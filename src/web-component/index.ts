@@ -5,6 +5,9 @@
 
 import { NMRiumWebComponent, registerNMRiumElement } from './NMRiumWebComponent.js';
 
+// Re-export component styles for external use if needed
+export { componentStyles } from './styles.js';
+
 // Auto-register the element when this module is imported
 registerNMRiumElement('nmrium-viewer');
 
@@ -17,8 +20,6 @@ export type { NMRiumWebComponentProps } from './NMRiumWebComponent.js';
 // Re-export core types that consumers might need
 export type {
   NMRiumData,
-  NMRiumPreferences,
-  NMRiumWorkspace,
 } from '../component/main/index.js';
 
 // Provide a default export for convenience
