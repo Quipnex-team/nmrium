@@ -36,7 +36,6 @@ export function usePreferences(): PreferencesContextData {
 
 export function useWorkspacesList() {
   const { workspaces } = usePreferences();
-  console.log(workspaces);
   return useMemo(() => {
     return Object.keys(workspaces).map((key) => {
       const { visible, source } = workspaces[key] as WorkspaceWithSource;

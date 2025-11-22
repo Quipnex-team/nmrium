@@ -1,13 +1,25 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { copyFileSync } from 'fs';
 
 export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'automatic',
     }),
+    // Custom plugin to copy type definitions after build
+    {
+      name: 'copy-dts',
+      closeBundle() {
+        const src = resolve(__dirname, 'src/web-component/index.d.ts');
+        const dest = resolve(__dirname, 'dist/web-component/index.d.ts');
+        copyFileSync(src, dest);
+        console.log('✓ Copied index.d.ts to dist/web-component/');
+      },
+    },
   ],
+  publicDir: false, // Don't copy public folder files for library build
   build: {
     lib: {
       entry: resolve(__dirname, 'src/web-component/index.ts'),
@@ -36,6 +48,8 @@ export default defineConfig({
         assetFileNames: 'nmrium-webcomponent.[ext]',
         // Inline CSS into JS bundle for self-contained web component
         inlineDynamicImports: true,
+        // Use named exports to avoid default export warning
+        exports: 'named',
       },
     },
   },

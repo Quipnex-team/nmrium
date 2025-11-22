@@ -61,7 +61,7 @@ export const WORKSPACES_KEYS = {
 export interface Settings {
   version: number;
   workspaces: Record<string, WorkspaceWithSource>;
-  currentWorkspace: string;
+  currentWorkspace;
 }
 
 type InitPreferencesAction = ActionType<
@@ -195,8 +195,6 @@ export interface PreferencesState {
     current: NMRiumWorkspace;
     base: NMRiumWorkspace | null;
   };
-  serverSyncEnabled?: boolean;
-  lastServerSync?: number;
 }
 
 export const preferencesInitialState: PreferencesState = {
@@ -211,62 +209,12 @@ export const preferencesInitialState: PreferencesState = {
 };
 
 export function readSettings(): Settings {
-  const localData = getLocalStorage(LOCAL_STORAGE_SETTINGS_KEY);
-
-  // If no local data exists, return default settings without migration
-  if (!localData) {
-    return {
-      version: CURRENT_EXPORT_VERSION,
-      currentWorkspace: 'default',
-      workspaces: {
-        default: {
-          ...Workspaces.default,
-          source: 'predefined' as WorkSpaceSource,
-        } as WorkspaceWithSource,
-      },
-    };
-  }
-  
-  // Ensure workspaces property exists and is valid before migration
-  if (!localData.workspaces || typeof localData.workspaces !== 'object' || Object.keys(localData.workspaces).length === 0) {
-    localData.workspaces = {
-      default: {
-        ...Workspaces.default,
-        source: 'predefined' as WorkSpaceSource,
-      } as WorkspaceWithSource,
-    };
-  }
-
-  // Ensure each workspace has the required structure
-  for (const key of Object.keys(localData.workspaces)) {
-    if (!localData.workspaces[key] || typeof localData.workspaces[key] !== 'object') {
-      // Use default workspace as template if available
-      const baseWorkspace = Workspaces[key] || Workspaces.default;
-      localData.workspaces[key] = {
-        ...baseWorkspace,
-        label: localData.workspaces[key]?.label || key,
-        source: (localData.workspaces[key]?.source || 'user') as WorkSpaceSource,
-      } as WorkspaceWithSource;
-    }
-  }
-  
-  try {
-    return migrateSettings(localData);
-  } catch (error) {
-    console.error('Failed to migrate settings:', error);
-    console.log('Returning default settings instead');
-    // If migration fails, return default settings
-    return {
-      version: CURRENT_EXPORT_VERSION,
-      currentWorkspace: 'default',
-      workspaces: {
-        default: {
-          ...Workspaces.default,
-          source: 'predefined' as WorkSpaceSource,
-        } as WorkspaceWithSource,
-      },
-    };
-  }
+  const localData = getLocalStorage(LOCAL_STORAGE_SETTINGS_KEY) || {
+    version: CURRENT_EXPORT_VERSION,
+    currentWorkspace: null,
+    workspaces: {},
+  };
+  return migrateSettings(localData);
 }
 
 export function updateSettings(settings: Settings) {
@@ -290,13 +238,7 @@ export function initPreferencesState(
     source: 'user',
   });
 
-  // Check if server sync is enabled (can be set via environment or user preference)
-  const serverSyncEnabled = 
-    localStorage.getItem('nmrium_server_sync') === 'true' ||
-    (typeof process !== 'undefined' && process.env?.REACT_APP_ENABLE_SERVER_SYNC === 'true') ||
-    (typeof window !== 'undefined' && (window as any).NMRIUM_CONFIG?.enableServerSync === true);
-
-  const initialState = {
+  return {
     ...state,
     originalWorkspaces: { ...predefinedWorkspaces, ...localWorkspaces },
     workspaces: { ...predefinedWorkspaces, ...localWorkspaces },
@@ -304,36 +246,7 @@ export function initPreferencesState(
       current: settings?.currentWorkspace || 'default',
       base: null,
     },
-    serverSyncEnabled,
-    lastServerSync: 0,
   };
-
-  // Load preferences from server if sync is enabled
-/*   if (serverSyncEnabled && typeof window !== 'undefined') {
-    import('../../utility/LocalStorage.js').then(({ preferencesAPI }) => {
-      preferencesAPI.getUserPreferences()
-        .then(data => {
-          if (data?.preferences) {
-            // Server preferences will be merged via dispatch action
-            const serverWorkspaces = data.preferences.workspaces || {};
-            const serverCurrent = data.preferences.current_workspace;
-            
-            // Store in localStorage for offline access
-            const mergedSettings = {
-              ...settings,
-              workspaces: { ...settings.workspaces, ...serverWorkspaces },
-              currentWorkspace: serverCurrent || settings.currentWorkspace,
-            };
-            updateSettings(mergedSettings);
-          }
-        })
-        .catch(error => {
-          console.warn('Failed to load server preferences, using local:', error);
-        });
-    });
-  } */
-
-  return initialState;
 }
 
 function innerPreferencesReducer(

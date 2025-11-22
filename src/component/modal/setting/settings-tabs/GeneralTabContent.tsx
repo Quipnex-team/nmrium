@@ -1,5 +1,4 @@
-import { Button, Switch, Tag } from '@blueprintjs/core';
-import { useCallback, useState } from 'react';
+import { Switch, Tag } from '@blueprintjs/core';
 import { Controller, useFormContext } from 'react-hook-form';
 
 import { LOGGER_LEVELS } from '../../../context/LoggerContext.js';
@@ -8,7 +7,6 @@ import Label from '../../../elements/Label.js';
 import { NumberInput2Controller } from '../../../elements/NumberInput2Controller.js';
 import { Select2 } from '../../../elements/Select2.js';
 import type { WorkspaceWithSource } from '../../../reducer/preferences/preferencesReducer.js';
-import { setAPIConfig, useLocalStorageMigration } from '../../../utility/LocalStorage.js';
 import { settingLabelStyle } from '../GeneralSettings.js';
 
 interface SelectItem {
@@ -41,50 +39,7 @@ const LOGS_LEVELS = Object.keys(LOGGER_LEVELS).map((level) => ({
 }));
 
 function GeneralTabContent() {
-  const { register, control, setValue, watch } = useFormContext<WorkspaceWithSource>();
-  const [apiUrl, setApiUrl] = useState(
-    localStorage.getItem('nmrium_api_url') || 'http://localhost:8000/qxcore'
-  );
-  const [apiToken, setApiToken] = useState(
-    localStorage.getItem('nmrium_api_token') || ''
-  );
-  const [serverSyncEnabled, setServerSyncEnabled] = useState(
-    localStorage.getItem('nmrium_server_sync') === 'true'
-  );
-  const { migrateToServer, migrating, migrationResult, migrationError, isMigrationComplete } = useLocalStorageMigration();
-  
-  const handleServerSyncToggle = useCallback((enabled: boolean) => {
-    setServerSyncEnabled(enabled);
-    localStorage.setItem('nmrium_server_sync', enabled ? 'true' : 'false');
-    if (enabled) {
-      // Configure API when enabling
-      setAPIConfig({
-        baseURL: apiUrl,
-        token: apiToken || undefined,
-      });
-      
-      // Save API configuration
-      localStorage.setItem('nmrium_api_url', apiUrl);
-      if (apiToken) {
-        localStorage.setItem('nmrium_api_token', apiToken);
-      }
-    }
-  }, [apiUrl, apiToken]);
-  
-  const handleMigration = useCallback(async () => {
-    try {
-      // Configure API before migration
-      setAPIConfig({
-        baseURL: apiUrl,
-        token: apiToken || undefined,
-      });
-      
-      await migrateToServer();
-      alert('Migration completed successfully!');
-    } catch (error) {
-      alert(`Migration failed: ${error}`);
-    }
-  }, [apiUrl, apiToken, migrateToServer]);
+  const { register, control } = useFormContext<WorkspaceWithSource>();
 
   return (
     <>
@@ -108,62 +63,6 @@ function GeneralTabContent() {
         <Label title="Invert scroll" style={settingLabelStyle}>
           <Switch style={{ margin: 0 }} {...register(`general.invertScroll`)} />
         </Label>
-      </GroupPane>
-      <GroupPane text="Server Synchronization">
-        <Label title="Enable server sync" style={settingLabelStyle}>
-          <Switch 
-            style={{ margin: 0 }} 
-            checked={serverSyncEnabled || false}
-            onChange={(e) => {
-              const enabled = (e.target as HTMLInputElement).checked;
-              handleServerSyncToggle(enabled);
-            }}
-          />
-        </Label>
-        {serverSyncEnabled && (
-          <>
-            <Label title="API URL" style={settingLabelStyle}>
-              <input
-                type="text"
-                value={apiUrl}
-                onChange={(e) => setApiUrl(e.target.value)}
-                style={{ width: '250px', padding: '4px' }}
-                placeholder="http://localhost:8000/qxcore"
-              />
-            </Label>
-            <Label title="API Token (optional)" style={settingLabelStyle}>
-              <input
-                type="password"
-                value={apiToken}
-                onChange={(e) => setApiToken(e.target.value)}
-                style={{ width: '250px', padding: '4px' }}
-                placeholder="JWT token for authentication"
-              />
-            </Label>
-            <Label title="Data Migration" style={settingLabelStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Button
-                  intent="primary"
-                  onClick={handleMigration}
-                  disabled={migrating || isMigrationComplete()}
-                  loading={migrating}
-                >
-                  {isMigrationComplete() ? 'Migration Complete' : 'Migrate Local Data to Server'}
-                </Button>
-                {migrationResult && (
-                  <Tag intent="success">
-                    Migrated: {migrationResult.migrated?.workspaces || 0} workspaces,
-                    {' '}{migrationResult.migrated?.preferences || 0} preferences,
-                    {' '}{migrationResult.migrated?.exercises || 0} exercises
-                  </Tag>
-                )}
-                {migrationError && (
-                  <Tag intent="danger">Migration failed</Tag>
-                )}
-              </div>
-            </Label>
-          </>
-        )}
       </GroupPane>
       <GroupPane text="Experimental features">
         <Label title="Enable experimental features" style={settingLabelStyle}>

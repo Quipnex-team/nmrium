@@ -21,9 +21,6 @@ export function setWorkspace(
       );
     }
     draft.workspace.current = workspaceKey;
-    
-    // Server sync is now handled in useWorkspaceAction via workspace API
-    // No API call needed here
   } else if (action.payload.workspaceSource === 'nmriumFile') {
     const workspaceData = { label: 'NMRium File', source: 'nmriumFile' };
     const workspaceKey = WORKSPACES_KEYS.nmriumKey;
@@ -37,8 +34,5 @@ export function setWorkspace(
     );
 
     draft.workspace = { current: workspaceKey, base: workspaceKey };
-    
-    // Server sync is now handled in useWorkspaceAction via workspace API
-    // No API call needed here
   }
 }

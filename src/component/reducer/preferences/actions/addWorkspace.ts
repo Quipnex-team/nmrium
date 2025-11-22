@@ -15,8 +15,5 @@ export function addWorkspace(
     draft.workspaces[workspaceKey] = data as WorkspaceWithSource;
     draft.originalWorkspaces[workspaceKey] = data as WorkspaceWithSource;
     draft.workspace.current = workspaceKey as any;
-    
-    // Server sync is now handled in useWorkspaceAction via workspace API
-    // No API call needed here
   }
 }
